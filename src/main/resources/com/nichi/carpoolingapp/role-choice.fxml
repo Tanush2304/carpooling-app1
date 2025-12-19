@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.nichi.carpoolingapp.controller.RoleChoiceController"
+            stylesheets="@role-choice.css"
+            styleClass="root">
+
+    <!-- TOP BAR -->
+    <top>
+        <HBox alignment="CENTER_LEFT"
+              spacing="15"
+              styleClass="top-bar">
+            <padding>
+                <Insets top="12" right="20" bottom="12" left="20"/>
+            </padding>
+
+            <Label text="Carpooling App"
+                   styleClass="app-title"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Label fx:id="userNameLabel"
+                   text="👤User"
+                   styleClass="user-label"/>
+
+
+
+            <Button text="Logout"
+                    onAction="#logout"
+                    styleClass="logout-btn"/>
+        </HBox>
+    </top>
+
+    <!-- CENTER AREA -->
+    <center>
+        <StackPane>
+
+            <!-- BACKGROUND IMAGE -->
+            <Pane styleClass="background-image"/>
+
+            <!-- DULL OVERLAY -->
+            <Pane styleClass="overlay"/>
+
+            <!-- CONTENT -->
+            <VBox alignment="CENTER"
+                  spacing="25"
+                  translateY="-120"
+                  styleClass="content-card">
+
+                <Label text="Continue as"
+                       styleClass="page-title"/>
+
+                <HBox spacing="30"
+                      alignment="CENTER">
+
+                    <Button text=" Driver"
+                            prefWidth="200"
+                            prefHeight="60"
+                            onAction="#openDriverDashboard"
+                            styleClass="role-btn"/>
+
+                    <Button text="Customer"
+                            prefWidth="200"
+                            prefHeight="60"
+                            onAction="#openCustomerDashboard"
+                            styleClass="role-btn"/>
+
+                </HBox>
+            </VBox>
+
+        </StackPane>
+    </center>
+
+</BorderPane>

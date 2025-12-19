@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<?import javafx.geometry.Insets?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.nichi.carpoolingapp.controller.LoginController"
+            styleClass="root">
+
+    <HBox prefHeight="800" prefWidth="1400">
+
+        <!-- LEFT BRANDING PANEL -->
+        <VBox prefWidth="450"
+              alignment="CENTER"
+              spacing="15"
+              styleClass="left-pane">
+
+            <ImageView fitWidth="260"
+                       preserveRatio="true"
+                       opacity="0.9">
+                <image>
+                    <Image url="@images/car.png"/>
+                </image>
+            </ImageView>
+
+            <Label text="Carpooling"
+                   styleClass="title"/>
+
+            <Label text="Share rides. Save money."
+                   styleClass="subtitle"/>
+
+            <Label text="Car car car elnodi car"
+                   styleClass="subtitle1"/>
+
+        </VBox>
+
+        <!-- RIGHT CONTENT -->
+        <VBox alignment="CENTER"
+              HBox.hgrow="ALWAYS">
+
+            <VBox spacing="20"
+                  alignment="CENTER"
+                  styleClass="login-card"
+                  maxWidth="420">
+
+                <!-- LOGIN / SIGNUP TABS -->
+                <HBox spacing="30" alignment="CENTER">
+
+                    <Label text="Login"
+                           fx:id="loginTab"
+                           styleClass="tab-active"
+                           onMouseClicked="#showLogin"/>
+
+                    <Label text="Sign Up"
+                           fx:id="registerTab"
+                           styleClass="tab-inactive"
+                           onMouseClicked="#showRegister"/>
+
+                </HBox>
+
+                <!-- ================= LOGIN FORM ================= -->
+                <VBox fx:id="loginForm"
+                      spacing="12"
+                      alignment="CENTER">
+
+                    <TextField fx:id="loginEmail"
+                               promptText="Email"/>
+
+                    <!-- Password with eye -->
+                    <StackPane>
+
+                        <PasswordField fx:id="loginPassword"
+                                       promptText="Password"
+                                      />
+
+                        <TextField fx:id="loginPasswordVisible"
+                                   promptText="Password"
+
+                                   visible="false"
+                                   managed="false"/>
+
+                        <Button text="👁"
+                                onAction="#toggleLoginPassword"
+                                style="-fx-background-color: transparent;"
+                                StackPane.alignment="CENTER_RIGHT">
+                            <StackPane.margin>
+                                <Insets top="0" right="10" bottom="0" left="0"/>
+                            </StackPane.margin>
+                        </Button>
+
+                    </StackPane>
+
+
+
+
+                    <Button text="Login"
+                            onAction="#handleLogin"
+                            styleClass="login-button"/>
+                </VBox>
+
+                <!-- ================= REGISTER FORM ================= -->
+                <VBox fx:id="registerForm"
+                      spacing="12"
+                      alignment="CENTER"
+                      visible="false"
+                      managed="false">
+
+                    <TextField fx:id="regName"
+                               promptText="Full Name"/>
+
+                    <TextField fx:id="regEmail"
+                               promptText="Email"/>
+
+                    <!-- Password with eye -->
+
+                    <StackPane>
+
+                        <PasswordField fx:id="regPassword"
+                                       promptText="Password"
+                                    />
+
+                        <TextField fx:id="regPasswordVisible"
+                                   promptText="Password"
+
+                                   visible="false"
+                                   managed="false"/>
+
+                        <Button text="👁"
+                                onAction="#toggleRegisterPassword"
+                                style="-fx-background-color: transparent;"
+                                StackPane.alignment="CENTER_RIGHT">
+                            <StackPane.margin>
+                                <Insets top="0" right="10" bottom="0" left="0"/>
+                            </StackPane.margin>
+                        </Button>
+
+                    </StackPane>
+
+
+
+                    <Button text="Sign Up"
+                            onAction="#handleRegister"
+                            styleClass="login-button"/>
+                </VBox>
+
+            </VBox>
+        </VBox>
+
+    </HBox>
+</AnchorPane>
