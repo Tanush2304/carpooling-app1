@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nichi.carpoolingapp.controller.DriverDashboardController" stylesheets="@style.css">
+
+    <!-- Header -->
+    <HBox styleClass="header-box" alignment="CENTER_LEFT" spacing="20">
+        <Label text="Carpooling - Driver" styleClass="header-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="welcomeLabel" text="Welcome, User" styleClass="header-user-info"/>
+        <Button text="Logout" onAction="#logout" styleClass="button, button-logout"/>
+    </HBox>
+
+    <VBox spacing="20" style="-fx-padding: 20;" VBox.vgrow="ALWAYS">
+        <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+            <tabs>
+                <!-- Publish Ride Tab -->
+                <Tab text="Publish Ride">
+                    <VBox spacing="15" style="-fx-padding: 20; -fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 1;">
+                        <Label text="Publish a New Ride" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                        
+                        <TextField fx:id="sourceField" promptText="Source (From)" maxWidth="400"/>
+                        <TextField fx:id="destinationField" promptText="Destination (To)" maxWidth="400"/>
+                        
+                        <HBox spacing="15">
+                            <DatePicker fx:id="datePicker" promptText="Select Date"/>
+                            <TextField fx:id="timeField" promptText="Time (HH:MM:SS)" maxWidth="150"/>
+                        </HBox>
+
+                        <HBox spacing="15">
+                             <TextField fx:id="seatsField" promptText="Seats" maxWidth="100"/>
+                             <TextField fx:id="priceField" promptText="Price per Seat" maxWidth="100"/>
+                        </HBox>
+
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Label text="ID Proof:"/>
+                            <Button text="Upload ID" onAction="#uploadIdProof" styleClass="button-secondary"/>
+                            <Label fx:id="idProofLabel" text="No file selected"/>
+                        </HBox>
+
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <Label text="Car Photo:"/>
+                            <Button text="Upload Car Photo" onAction="#uploadCarPhoto" styleClass="button-secondary"/>
+                            <Label fx:id="carPhotoLabel" text="No file selected"/>
+                        </HBox>
+
+                        <Button text="Publish Ride" onAction="#publishRide" styleClass="button, button-action"/>
+                    </VBox>
+                </Tab>
+
+                <!-- My Rides Tab -->
+                <Tab text="My Rides">
+                    <VBox spacing="10" style="-fx-padding: 20;">
+                        <HBox alignment="CENTER_RIGHT">
+                             <Button text="Refresh" onAction="#refreshRides" styleClass="button-secondary"/>
+                        </HBox>
+                        <TableView fx:id="myRidesTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                                <TableColumn fx:id="colSource" text="Source" prefWidth="150"/>
+                                <TableColumn fx:id="colDest" text="Destination" prefWidth="150"/>
+                                <TableColumn fx:id="colDate" text="Date" prefWidth="100"/>
+                                <TableColumn fx:id="colTime" text="Time" prefWidth="100"/>
+                                <TableColumn fx:id="colSeats" text="Seats" prefWidth="50"/>
+                                <TableColumn fx:id="colPrice" text="Price" prefWidth="80"/>
+                                <TableColumn fx:id="colStatus" text="Status" prefWidth="80"/>
+                                <TableColumn fx:id="colRideAction" text="Action" prefWidth="120"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </Tab>
+                
+                <!-- Requests Tab -->
+                <Tab text="Requests">
+                     <VBox spacing="10" style="-fx-padding: 20;">
+                         <HBox alignment="CENTER_RIGHT">
+                             <Button text="Refresh Requests" onAction="#refreshRequests" styleClass="button-secondary"/>
+                        </HBox>
+                          <TableView fx:id="requestsTable" VBox.vgrow="ALWAYS">
+                               <columns>
+                                   <TableColumn fx:id="colReqById" text="Request ID" prefWidth="80"/>
+                                   <TableColumn fx:id="colReqRideId" text="Ride ID" prefWidth="80"/>
+                                   <TableColumn fx:id="colReqCustomerName" text="Customer Name" prefWidth="120"/>
+                                   <TableColumn fx:id="colReqStatus" text="Status" prefWidth="120"/>
+                                   <TableColumn fx:id="colReqActions" text="Action" prefWidth="150"/> 
+                               </columns>
+                          </TableView>
+                     </VBox>
+                </Tab>
+            </tabs>
+        </TabPane>
+        
+        <HBox alignment="CENTER_LEFT">
+             <Button text="← Back to Role Choice" onAction="#goBack" styleClass="button-secondary"/>
+        </HBox>
+    </VBox>
+</VBox>

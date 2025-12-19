@@ -1,0 +1,126 @@
+/* Global Font */
+.root {
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-base: #f4f4f4;
+}
+
+/* Header Styling */
+.header-box {
+    -fx-background-color: #2c3e50;
+    -fx-padding: 15;
+    -fx-alignment: center-left;
+}
+
+.header-title {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.header-user-info {
+    -fx-text-fill: #ecf0f1;
+    -fx-font-size: 14px;
+}
+
+/* Button Styling */
+.button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 8 15;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.button-logout {
+    -fx-background-color: #e74c3c;
+}
+
+.button-logout:hover {
+    -fx-background-color: #c0392b;
+}
+
+.button-secondary {
+    -fx-background-color: #95a5a6;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #7f8c8d;
+}
+
+/* specific action buttons */
+.button-action {
+    -fx-background-color: #27ae60;
+}
+
+.button-action:hover {
+    -fx-background-color: #2ecc71;
+}
+
+/* TabPane Styling */
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #bdc3c7;
+    -fx-background-insets: 0 1 0 0;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: white;
+}
+
+.tab-label {
+    -fx-text-fill: #2c3e50;
+    -fx-font-weight: bold;
+}
+
+/* TableView Styling */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #bdc3c7;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #ecf0f1;
+    -fx-border-color: transparent transparent #bdc3c7 transparent;
+}
+
+.table-view .column-header .label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.table-cell {
+    -fx-text-fill: #2c3e50;
+    -fx-alignment: center-left;
+    -fx-padding: 5;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: #3498db;
+}
+
+.table-row-cell:filled:selected .table-cell {
+    -fx-text-fill: white;
+}
+
+/* Form Elements */
+.text-field,
+.password-field,
+.date-picker {
+    -fx-background-color: white;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 3;
+    -fx-padding: 8;
+}
+
+.text-field:focused,
+.password-field:focused {
+    -fx-border-color: #3498db;
+}
