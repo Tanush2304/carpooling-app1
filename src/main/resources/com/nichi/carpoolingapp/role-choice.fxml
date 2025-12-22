@@ -38,18 +38,18 @@
     <!-- CENTER AREA -->
     <center>
         <StackPane>
-
             <!-- BACKGROUND IMAGE -->
             <Pane styleClass="background-image"/>
 
             <!-- DULL OVERLAY -->
             <Pane styleClass="overlay"/>
 
-            <!-- CONTENT -->
+            <!-- CONTENT CARD -->
             <VBox alignment="CENTER"
                   spacing="25"
-                  translateY="-120"
-                  styleClass="content-card">
+                  pickOnBounds="false"
+                  styleClass="content-card"
+                  maxWidth="500" maxHeight="400">
 
                 <Label text="Continue as"
                        styleClass="page-title"/>
@@ -70,8 +70,13 @@
                             styleClass="role-btn"/>
 
                 </HBox>
+                
+                 <Button fx:id="adminDashboardBtn"
+                        text="Admin Dashboard" 
+                        onAction="#adminLogin" 
+                        styleClass="role-btn" 
+                        style="-fx-font-size: 10px; -fx-pref-width: 150; -fx-pref-height: 40;"/>
             </VBox>
-
         </StackPane>
     </center>
 

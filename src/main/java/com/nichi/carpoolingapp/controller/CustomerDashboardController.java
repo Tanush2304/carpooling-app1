@@ -11,6 +11,8 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 
 import java.sql.Date;
 import java.sql.Time;
@@ -48,6 +50,9 @@ public class CustomerDashboardController {
     private TableColumn<Request, Date> colBookDate;
 
     @FXML
+    private javafx.scene.web.WebView mapWebView;
+
+    @FXML
     public void initialize() {
         if (welcomeLabel != null) {
             welcomeLabel.setText("Welcome, " + UserSession.getUserName());
@@ -55,10 +60,108 @@ public class CustomerDashboardController {
         setupTable();
         setupBookingsTable();
         refreshBookings();
+
+        setupAutocomplete(searchSource);
+        setupAutocomplete(searchDest);
+        loadMap();
+    }
+
+    private void loadMap() {
+        String url = getClass().getResource("/com/nichi/carpoolingapp/map.html").toExternalForm();
+        mapWebView.getEngine().load(url);
+    }
+
+    private void setupAutocomplete(TextField textField) {
+        ContextMenu suggestions = new ContextMenu();
+
+
+        String[] defaultCities = { "Bangalore", "Davangere", "Delhi", "Hyderabad", "Chennai", "Pune", "Kolkata",
+                "Ahmedabad" };
+
+        textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal && textField.getText().isEmpty()) {
+                suggestions.getItems().clear();
+                for (String city : defaultCities) {
+                    MenuItem item = new MenuItem(city);
+                    item.setOnAction(e -> {
+                        textField.setText(city);
+                        updateMapMarker(city, textField == searchSource);
+                    });
+                    suggestions.getItems().add(item);
+                }
+                suggestions.show(textField, javafx.geometry.Side.BOTTOM, 0, 0);
+            }
+        });
+
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null || newValue.length() < 3) {
+
+                if (newValue == null || newValue.isEmpty())
+                    return;
+                suggestions.hide();
+                return;
+            }
+            new Thread(() -> {
+                List<String> results = fetchSuggestions(newValue);
+                javafx.application.Platform.runLater(() -> {
+                    if (results.isEmpty()) {
+                        suggestions.hide();
+                    } else {
+                        suggestions.getItems().clear();
+                        for (String place : results) {
+                            MenuItem item = new MenuItem(place);
+                            item.setOnAction(e -> {
+                                textField.setText(place);
+                                suggestions.hide();
+                                updateMapMarker(place, textField == searchSource);
+                            });
+                            suggestions.getItems().add(item);
+                        }
+                        suggestions.show(textField, javafx.geometry.Side.BOTTOM, 0, 0);
+                    }
+                });
+            }).start();
+        });
+    }
+
+    private List<String> fetchSuggestions(String query) {
+        List<String> list = new java.util.ArrayList<>();
+        try {
+            String urlStr = "https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&q="
+                    + java.net.URLEncoder.encode(query, "UTF-8");
+            java.net.URL url = new java.net.URL(urlStr);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "CarpoolingApp/1.0");
+
+            if (conn.getResponseCode() == 200) {
+                java.io.BufferedReader in = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                String json = response.toString();
+                java.util.regex.Pattern p = java.util.regex.Pattern.compile("\"display_name\":\"(.*?)\"");
+                java.util.regex.Matcher m = p.matcher(json);
+                while (m.find()) {
+                    list.add(m.group(1));
+                    if (list.size() >= 5)
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     @FXML
-    private void logout() {
+    public void logout() {
+        System.out.println("CustomerDashboardController: Logging out...");
         UserSession.clear();
         SceneUtil.load("login.fxml");
     }
@@ -136,5 +239,12 @@ public class CustomerDashboardController {
         alert.setTitle(title);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    private void updateMapMarker(String location, boolean isSource) {
+        if (mapWebView != null) {
+            String script = String.format("searchLocation('%s', %b)", location.replace("'", "\\'"), isSource);
+            mapWebView.getEngine().executeScript(script);
+        }
     }
 }

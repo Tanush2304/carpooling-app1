@@ -6,11 +6,13 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox spacing="0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nichi.carpoolingapp.controller.CustomerDashboardController" stylesheets="@style.css">
@@ -24,50 +26,61 @@
     </HBox>
 
     <VBox spacing="20" style="-fx-padding: 20;" VBox.vgrow="ALWAYS">
-        <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
-            <tabs>
-                <Tab text="Search Rides">
-                    <VBox spacing="15" style="-fx-padding: 20;">
-                        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 15; -fx-border-color: #bdc3c7; -fx-border-radius: 5;">
-                            <TextField fx:id="searchSource" promptText="From" prefWidth="200"/>
-                            <TextField fx:id="searchDest" promptText="To" prefWidth="200"/>
-                            <DatePicker fx:id="searchDate" promptText="Date"/>
-                            <Button text="Search" onAction="#searchRides" styleClass="button, button-action"/>
-                        </HBox>
+        <HBox spacing="20" VBox.vgrow="ALWAYS">
+            <!-- Left Side: Content Tabs -->
+            <TabPane tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS">
+                <tabs>
+                    <Tab text="Search Rides">
+                        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                            <VBox spacing="15" style="-fx-padding: 20;">
+                                <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-padding: 15; -fx-border-color: #bdc3c7; -fx-border-radius: 5;">
+                                    <TextField fx:id="searchSource" promptText="From" HBox.hgrow="ALWAYS"/>
+                                    <TextField fx:id="searchDest" promptText="To" HBox.hgrow="ALWAYS"/>
+                                    <DatePicker fx:id="searchDate" promptText="Date"/>
+                                    <Button text="Search Rides" onAction="#searchRides" styleClass="button, button-action"/>
+                                </HBox>
 
-                        <TableView fx:id="searchResultsTable" VBox.vgrow="ALWAYS">
-                             <columns>
-                                 <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
-                                 <TableColumn fx:id="colSource" text="Source" prefWidth="150"/>
-                                 <TableColumn fx:id="colDest" text="Destination" prefWidth="150"/>
-                                 <TableColumn fx:id="colDate" text="Date" prefWidth="100"/>
-                                 <TableColumn fx:id="colTime" text="Time" prefWidth="100"/>
-                                 <TableColumn fx:id="colPrice" text="Price" prefWidth="80"/>
-                                 <TableColumn fx:id="colAction" text="Action" prefWidth="120"/>
-                             </columns>
-                        </TableView>
-                    </VBox>
-                </Tab>
+                                <TableView fx:id="searchResultsTable" VBox.vgrow="ALWAYS" minHeight="300">
+                                     <columns>
+                                         <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                                         <TableColumn fx:id="colSource" text="Source" prefWidth="150"/>
+                                         <TableColumn fx:id="colDest" text="Destination" prefWidth="150"/>
+                                         <TableColumn fx:id="colDate" text="Date" prefWidth="100"/>
+                                         <TableColumn fx:id="colTime" text="Time" prefWidth="100"/>
+                                         <TableColumn fx:id="colPrice" text="Price" prefWidth="80"/>
+                                         <TableColumn fx:id="colAction" text="Action" prefWidth="120"/>
+                                     </columns>
+                                </TableView>
+                            </VBox>
+                        </ScrollPane>
+                    </Tab>
 
-                <Tab text="My Bookings">
-                    <VBox spacing="10" style="-fx-padding: 20;">
-                         <HBox alignment="CENTER_RIGHT">
-                             <Button text="Refresh" onAction="#refreshBookings" styleClass="button-secondary"/>
-                        </HBox>
-                        <TableView fx:id="myBookingsTable" VBox.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="colBookSource" text="Source" prefWidth="150"/>
-                                <TableColumn fx:id="colBookDest" text="Destination" prefWidth="150"/>
-                                <TableColumn fx:id="colBookDate" text="Date" prefWidth="100"/>
-                                <TableColumn fx:id="colBookDriver" text="Driver" prefWidth="120"/>
-                                <TableColumn fx:id="colBookStatus" text="Status" prefWidth="100"/>
-                            </columns>
-                        </TableView>
-                    </VBox>
-                </Tab>
-            </tabs>
-        </TabPane>
+                    <Tab text="My Bookings">
+                        <VBox spacing="10" style="-fx-padding: 20;">
+                             <HBox alignment="CENTER_RIGHT">
+                                 <Button text="Refresh" onAction="#refreshBookings" styleClass="button-secondary"/>
+                            </HBox>
+                            <TableView fx:id="myBookingsTable" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn fx:id="colBookSource" text="Source" prefWidth="150"/>
+                                    <TableColumn fx:id="colBookDest" text="Destination" prefWidth="150"/>
+                                    <TableColumn fx:id="colBookDate" text="Date" prefWidth="100"/>
+                                    <TableColumn fx:id="colBookDriver" text="Driver" prefWidth="120"/>
+                                    <TableColumn fx:id="colBookStatus" text="Status" prefWidth="100"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </Tab>
+                </tabs>
+            </TabPane>
 
+            <!-- Right Side: Map View -->
+            <VBox spacing="10" style="-fx-background-color: white; -fx-padding: 10; -fx-border-color: #bdc3c7;" prefWidth="400">
+                <Label text="Map View" style="-fx-font-weight: bold;"/>
+                <javafx.scene.web.WebView fx:id="mapWebView" VBox.vgrow="ALWAYS" minHeight="400"/>
+            </VBox>
+        </HBox>
+        
         <HBox alignment="CENTER_LEFT">
              <Button text="← Back to Role Choice" onAction="#goBack" styleClass="button-secondary"/>
         </HBox>

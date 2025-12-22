@@ -7,9 +7,16 @@ import javafx.stage.Stage;
 public class SceneUtil {
 
     public static void load(String fxml) {
-        System.out.println("SceneUtil loading: " + fxml);
+        System.out.println(">>> SceneUtil: Attempting to load FXML: " + fxml);
         try {
-            Stage stage = (Stage) Stage.getWindows().filtered(w -> w.isShowing()).get(0);
+            Stage stage = (Stage) javafx.stage.Window.getWindows().stream()
+                    .filter(w -> w instanceof Stage && w.isShowing())
+                    .findFirst()
+                    .orElse(null);
+
+            if (stage == null) {
+                throw new RuntimeException("No active stage found to load: " + fxml);
+            }
 
             FXMLLoader loader = new FXMLLoader(SceneUtil.class.getResource(fxml));
 
@@ -17,6 +24,10 @@ public class SceneUtil {
                     loader.load(),
                     stage.getWidth(),
                     stage.getHeight());
+
+            // Apply global CSS
+            scene.getStylesheets().add(
+                    SceneUtil.class.getResource("app.css").toExternalForm());
 
             stage.setScene(scene);
             stage.setMaximized(true);

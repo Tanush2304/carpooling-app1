@@ -30,7 +30,7 @@ public class RequestDAO {
 
     public static List<Request> getRequestsByUserId(int userId) {
         List<Request> requests = new ArrayList<>();
-        // Join with rides and users (drivers) to get details
+
         String sql = "SELECT req.*, r.source, r.destination, r.ride_date, u.name as driver_name " +
                 "FROM requests req " +
                 "JOIN rides r ON req.ride_id = r.id " +
@@ -66,7 +66,7 @@ public class RequestDAO {
 
     public static List<Request> getRequestsByRideId(int rideId) {
         List<Request> requests = new ArrayList<>();
-        // Join with users table to get the customer name
+
         String sql = "SELECT r.*, u.name as customer_name FROM requests r JOIN users u ON r.user_id = u.id WHERE r.ride_id = ?";
         try (Connection con = DBUtil.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {

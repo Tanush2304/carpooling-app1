@@ -80,17 +80,20 @@ public class LoginController {
         boolean valid = UserDAO.loginUser(email, password);
 
         if (valid) {
-         //   alert("Login successful");
+            // alert("Login successful");
             int userId = UserDAO.getUserIdByEmail(email);
             UserSession.setUser(
                     userId,
                     UserDAO.getUserNameByEmail(email),
                     email);
-            SceneUtil.load("role-choice.fxml");
+
+            if ("tanush.nis21b@gmail.com".equals(email)) {
+                SceneUtil.load("admin-dashboard.fxml");
+            } else {
+                SceneUtil.load("role-choice.fxml");
+            }
 
             clearLoginFields();
-
-            // TODO: load dashboard here
 
         } else {
             alert("Incorrect password");

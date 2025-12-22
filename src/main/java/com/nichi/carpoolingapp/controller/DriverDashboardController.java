@@ -17,6 +17,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.scene.layout.HBox;
+import javafx.scene.web.WebView;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,11 +32,11 @@ import java.util.List;
 public class DriverDashboardController {
 
     @FXML
-    private TextField sourceField, destinationField, timeField, seatsField, priceField;
+    private TextField sourceField, destinationField, seatsField, priceField;
+    @FXML
+    private ComboBox<String> hourCombo, minuteCombo;
     @FXML
     private DatePicker datePicker;
-    @FXML
-    private Label idProofLabel, carPhotoLabel;
     @FXML
     private Label welcomeLabel;
 
@@ -66,8 +67,8 @@ public class DriverDashboardController {
     @FXML
     private TableColumn<Ride, Button> colRideAction; // New column for Complete button
 
-    private File selectedIdProof;
-    private File selectedCarPhoto;
+    @FXML
+    private javafx.scene.web.WebView mapWebView;
 
     @FXML
     public void initialize() {
@@ -77,6 +78,122 @@ public class DriverDashboardController {
         setupRideTable();
         setupRequestTable();
         refreshRides();
+
+        setupAutocomplete(sourceField);
+        setupAutocomplete(destinationField);
+        loadMap();
+
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            public void updateItem(java.time.LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                java.time.LocalDate today = java.time.LocalDate.now();
+                setDisable(empty || date.isBefore(today));
+            }
+        });
+
+        ObservableList<String> hours = FXCollections.observableArrayList();
+        for (int i = 0; i < 24; i++) {
+            hours.add(String.format("%02d", i));
+        }
+        hourCombo.setItems(hours);
+
+        ObservableList<String> minutes = FXCollections.observableArrayList();
+        for (int i = 0; i < 60; i += 5) {
+            minutes.add(String.format("%02d", i));
+        }
+        minuteCombo.setItems(minutes);
+    }
+
+    private void loadMap() {
+        String url = getClass().getResource("/com/nichi/carpoolingapp/map.html").toExternalForm();
+        mapWebView.getEngine().load(url);
+    }
+
+    private void setupAutocomplete(TextField textField) {
+        ContextMenu suggestions = new ContextMenu();
+
+        String[] defaultCities = { "Bangalore", "Davangere", "Delhi", "Hyderabad", "Chennai", "Pune", "Kolkata",
+                "Ahmedabad" };
+
+        textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal && textField.getText().isEmpty()) {
+                suggestions.getItems().clear();
+                for (String city : defaultCities) {
+                    MenuItem item = new MenuItem(city);
+                    item.setOnAction(e -> {
+                        textField.setText(city);
+                        updateMapMarker(city, textField == sourceField);
+                    });
+                    suggestions.getItems().add(item);
+                }
+                suggestions.show(textField, javafx.geometry.Side.BOTTOM, 0, 0);
+            }
+        });
+
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null || newValue.length() < 3) {
+                // Keep default suggestions if empty
+                if (newValue == null || newValue.isEmpty())
+                    return;
+                suggestions.hide();
+                return;
+            }
+            new Thread(() -> {
+                List<String> results = fetchSuggestions(newValue);
+                javafx.application.Platform.runLater(() -> {
+                    if (results.isEmpty()) {
+                        suggestions.hide();
+                    } else {
+                        suggestions.getItems().clear();
+                        for (String place : results) {
+                            MenuItem item = new MenuItem(place);
+                            item.setOnAction(e -> {
+                                textField.setText(place);
+                                suggestions.hide();
+                                updateMapMarker(place, textField == sourceField);
+                            });
+                            suggestions.getItems().add(item);
+                        }
+                        suggestions.show(textField, javafx.geometry.Side.BOTTOM, 0, 0);
+                    }
+                });
+            }).start();
+        });
+    }
+
+    private List<String> fetchSuggestions(String query) {
+        List<String> list = new java.util.ArrayList<>();
+        try {
+            String urlStr = "https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&q="
+                    + java.net.URLEncoder.encode(query, "UTF-8");
+            java.net.URL url = new java.net.URL(urlStr);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "CarpoolingApp/1.0");
+
+            if (conn.getResponseCode() == 200) {
+                java.io.BufferedReader in = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String inputLine;
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+
+                String json = response.toString();
+                java.util.regex.Pattern p = java.util.regex.Pattern.compile("\"display_name\":\"(.*?)\"");
+                java.util.regex.Matcher m = p.matcher(json);
+                while (m.find()) {
+                    list.add(m.group(1));
+                    if (list.size() >= 5)
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     private void setupRideTable() {
@@ -142,50 +259,26 @@ public class DriverDashboardController {
     }
 
     @FXML
-    private void uploadIdProof() {
-        selectedIdProof = chooseFile("Select ID Proof");
-        if (selectedIdProof != null)
-            idProofLabel.setText(selectedIdProof.getName());
-    }
-
-    @FXML
-    private void uploadCarPhoto() {
-        selectedCarPhoto = chooseFile("Select Car Photo");
-        if (selectedCarPhoto != null)
-            carPhotoLabel.setText(selectedCarPhoto.getName());
-    }
-
-    private File chooseFile(String title) {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle(title);
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
-        return chooser.showOpenDialog(new Stage());
-    }
-
-    @FXML
     private void publishRide() {
         try {
             String source = sourceField.getText();
             String dest = destinationField.getText();
             Date date = Date.valueOf(datePicker.getValue());
-            Time time = Time.valueOf(timeField.getText() + ":00"); // Basic parsing
+
+            String selectedHour = hourCombo.getValue();
+            String selectedMinute = minuteCombo.getValue();
+            if (selectedHour == null || selectedMinute == null) {
+                showAlert("Error", "Please select a time.");
+                return;
+            }
+            Time time = Time.valueOf(selectedHour + ":" + selectedMinute + ":00");
+
             int seats = Integer.parseInt(seatsField.getText());
             double price = Double.parseDouble(priceField.getText());
             int driverId = UserSession.getUserId();
 
-            if (selectedIdProof == null || selectedCarPhoto == null) {
-                showAlert("Error", "Please upload ID Proof and Car Photo.");
-                return;
-            }
-
-            // Save files
-            String uploadDir = "uploads/";
-            new File(uploadDir).mkdirs();
-            String idPath = uploadDir + System.currentTimeMillis() + "_id_" + selectedIdProof.getName();
-            String carPath = uploadDir + System.currentTimeMillis() + "_car_" + selectedCarPhoto.getName();
-
-            Files.copy(selectedIdProof.toPath(), Paths.get(idPath), StandardCopyOption.REPLACE_EXISTING);
-            Files.copy(selectedCarPhoto.toPath(), Paths.get(carPath), StandardCopyOption.REPLACE_EXISTING);
+            String idPath = "VERIFIED_USER";
+            String carPath = "VERIFIED_USER";
 
             Ride ride = new Ride(driverId, source, dest, date, time, seats, price, "OPEN", idPath, carPath);
             if (RideDAO.publishRide(ride)) {
@@ -207,7 +300,7 @@ public class DriverDashboardController {
             return;
         List<Ride> rides = RideDAO.getRidesByDriverId(UserSession.getUserId());
         myRidesTable.setItems(FXCollections.observableArrayList(rides));
-        refreshRequests(); // Also refresh requests for these rides
+        refreshRequests();
     }
 
     @FXML
@@ -238,10 +331,8 @@ public class DriverDashboardController {
             // Send Rejection Email
             String customerEmail = UserDAO.getEmailById(request.getUserId());
             if (customerEmail != null) {
-                // Fetch ride details to include in email
-                // For simplicity, we might just pass ID, or fetch ride object.
-                // Ideally we cache or fetch ride info.
-                EmailService.sendRejectionEmail(customerEmail, UserSession.getUserName(),
+
+                EmailService.sendRejectionEmail("tanush.nis21b@gmail.com", UserSession.getUserName(),
                         "Ride ID: " + request.getRideId());
             }
             refreshRequests();
@@ -254,11 +345,10 @@ public class DriverDashboardController {
         if (RequestDAO.updateRequestStatus(request.getId(), "ACCEPTED")) {
             showAlert("Success", "Request accepted!");
 
-            // Get Customer Email details using the new DAO method
             String customerEmail = UserDAO.getEmailById(request.getUserId());
 
             if (customerEmail != null) {
-                EmailService.sendBookingConfirmation(customerEmail, UserSession.getUserName(),
+                EmailService.sendBookingConfirmation("tanush.nis21b@gmail.com", UserSession.getUserName(),
                         UserSession.getUserEmail());
             } else {
                 System.out.println("Could not find email for user ID: " + request.getUserId());
@@ -283,8 +373,16 @@ public class DriverDashboardController {
     }
 
     @FXML
-    private void logout() {
+    public void logout() {
+        System.out.println("DriverDashboardController: Logging out...");
         UserSession.clear();
         SceneUtil.load("login.fxml");
+    }
+
+    private void updateMapMarker(String location, boolean isSource) {
+        if (mapWebView != null) {
+            String script = String.format("searchLocation('%s', %b)", location.replace("'", "\\'"), isSource);
+            mapWebView.getEngine().executeScript(script);
+        }
     }
 }
