@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { width: 100%; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        var map = L.map('map').setView([20.5937, 78.9629], 5); // Center on India
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var markers = [];
+        var routeLine = null;
+
+        function clearMap() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            if (routeLine) {
+                map.removeLayer(routeLine);
+                routeLine = null;
+            }
+        }
+
+        function addMarker(lat, lon, title) {
+            var marker = L.marker([lat, lon]).addTo(map).bindPopup(title).openPopup();
+            markers.push(marker);
+            map.setView([lat, lon], 13);
+        }
+
+        // Search location restricted to India
+        function searchLocation(query, isSource) {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        var lat = data[0].lat;
+                        var lon = data[0].lon;
+                        addMarker(lat, lon, isSource ? "Source: " + query : "Destination: " + query);
+                        // Notify Java backend if needed (optional)
+                    } else {
+                        console.log("No results found for " + query);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function showRoute(startLat, startLon, endLat, endLon) {
+             clearMap();
+             addMarker(startLat, startLon, "Source");
+             addMarker(endLat, endLon, "Destination");
+
+             var latlngs = [
+                [startLat, startLon],
+                [endLat, endLon]
+             ];
+             routeLine = L.polyline(latlngs, {color: 'blue'}).addTo(map);
+             map.fitBounds(routeLine.getBounds());
+        }
+    </script>
+</body>
+</html>

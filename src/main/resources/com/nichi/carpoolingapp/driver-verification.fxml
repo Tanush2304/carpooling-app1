@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+
+<VBox spacing="20" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nichi.carpoolingapp.controller.DriverVerificationController" stylesheets="@style.css" style="-fx-padding: 40;">
+    <Label text="Driver Verification" styleClass="header-title"/>
+    <Label text="Please upload your documents to proceed. Admin verification required." style="-fx-text-fill: #7f8c8d;"/>
+
+    <VBox spacing="10" alignment="CENTER_LEFT" maxWidth="400" style="-fx-background-color: white; -fx-padding: 20; -fx-border-color: #bdc3c7; -fx-border-radius: 5;">
+        <Label text="Driving License:" style="-fx-font-weight: bold;"/>
+        <HBox spacing="10">
+            <Button text="Upload License" onAction="#uploadLicense" styleClass="button-secondary"/>
+            <Label fx:id="licenseLabel" text="No file selected"/>
+        </HBox>
+
+        <Label text="Car Photo:" style="-fx-font-weight: bold;"/>
+        <HBox spacing="10">
+            <Button text="Upload Car Photo" onAction="#uploadCarPhoto" styleClass="button-secondary"/>
+            <Label fx:id="carLabel" text="No file selected"/>
+        </HBox>
+    </VBox>
+
+    <Button text="Submit for Verification" onAction="#submitVerification" styleClass="button, button-action" prefWidth="200"/>
+    <Button text="Back" onAction="#goBack" styleClass="button-secondary"/>
+</VBox>
