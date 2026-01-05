@@ -141,9 +141,22 @@
 
 
 
-                    <Button text="Sign Up"
-                            onAction="#handleRegister"
+                    <TextField fx:id="regOTP"
+                               promptText="Enter 6-digit OTP"
+                               visible="false"
+                               managed="false"/>
+
+                    <Button fx:id="sendOTPButton"
+                            text="Send OTP"
+                            onAction="#handleSendOTP"
                             styleClass="login-button"/>
+
+                    <Button fx:id="verifyOTPButton"
+                            text="Verify &amp; Sign Up"
+                            onAction="#handleRegister"
+                            styleClass="login-button"
+                            visible="false"
+                            managed="false"/>
                 </VBox>
 
             </VBox>

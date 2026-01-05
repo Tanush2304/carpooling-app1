@@ -6,13 +6,11 @@ import javax.mail.internet.*;
 
 public class EmailService {
 
-    // Helper for testing
-    private static final String SENDER_EMAIL = "tanush.nis21b@gmail.com";
-    private static final String SENDER_PASSWORD = "arfa twmd iwpm zpcc";
+    private static final String SENDER_EMAIL = com.nichi.carpoolingapp.util.ConfigManager.get("email.sender");
+    private static final String SENDER_PASSWORD = com.nichi.carpoolingapp.util.ConfigManager.get("email.password");
 
     public static void sendBookingConfirmation(String toEmail, String driverName, String driverContact) {
 
-        // Mock email sending for now if credentials aren't set
         if (SENDER_EMAIL.contains("your_email")) {
             System.out.println(">>> [MOCK EMAIL SERVICE] Sending email to " + toEmail);
             System.out.println("Subject: Ride Confirmed!");
@@ -39,11 +37,9 @@ public class EmailService {
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject("Ride Confirmed: Detailed Information");
 
-            // More formal company-to-customer style
             String msgBody = "Dear Customer,\n\n" +
                     "We are pleased to inform you that your ride request has been ACCEPTED.\n\n" +
-                    "--------------------------------------------------\n" +
-                    "                DRIVER DETAILS                    \n" +
+                    "--------------DRIVER DETAILS-----------------------\n" +
                     "Name    : " + driverName + "\n" +
                     "Email   : " + driverContact + "\n" +
                     "Please coordinate with your driver for the pickup location.\n" +
@@ -102,6 +98,22 @@ public class EmailService {
         }
     }
 
+    public static void sendRefundInitiatedEmail(String toEmail, String userName,
+            int requestId, double amount) {
+
+        String subject = "Refund Initiated - Ride Cancellation";
+        String body = "Dear " + userName + ",\n\n" +
+                "Your ride request (Request ID: " + requestId + ") has been successfully cancelled.\n\n" +
+                "We have received your payment of ₹" + String.format("%.2f", amount) + ".\n" +
+                "The refund has been initiated and will be credited back to your original " +
+                "payment method within 3–5 working days.\n\n" +
+                "If you have any questions, feel free to contact our support team.\n\n" +
+                "Best Regards,\n" +
+                "The Carpooling App Team";
+
+        sendEmail(toEmail, subject, body);
+    }
+
     private static void sendEmail(String toEmail, String subject, String body) {
         if (SENDER_EMAIL.contains("your_email")) {
             System.out.println(">>> [MOCK EMAIL SERVICE] To: " + toEmail + " | Subject: " + subject);
@@ -131,6 +143,19 @@ public class EmailService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void sendOTPEmail(String toEmail, String otp) {
+        String subject = "Email Verification - Carpooling App";
+        String body = "Dear User,\n\n" +
+                "Thank you for signing up for the Carpooling App.\n" +
+                "Your One-Time Password (OTP) for email verification is:\n\n" +
+                "        " + otp + "\n\n" +
+                "This OTP is valid for 10 minutes. Please do not share it with anyone.\n\n" +
+                "Best Regards,\n" +
+                "The Carpooling App Team";
+
+        sendEmail(toEmail, subject, body);
     }
 
     public static void sendDriverVerificationAlert(String adminEmail, String driverName, String licensePath,

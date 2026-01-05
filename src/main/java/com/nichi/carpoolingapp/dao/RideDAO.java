@@ -51,6 +51,35 @@ public class RideDAO {
             return false;
         }
     }
+    public static boolean updateSeats(int rideId, int seats) {
+        String sql = "UPDATE rides SET seats = ? WHERE id = ?";
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, seats);
+            ps.setInt(2, rideId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    public static Ride getRideById(int rideId) {
+        String sql = "SELECT * FROM rides WHERE id = ?";
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, rideId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return mapResultSetToRide(rs);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public static List<Ride> getRidesByDriverId(int driverId) {
         List<Ride> rides = new ArrayList<>();
@@ -72,7 +101,9 @@ public class RideDAO {
 
     public static List<Ride> searchRides(String source, String destination, Date date) {
         List<Ride> rides = new ArrayList<>();
-        String sql = "SELECT * FROM rides WHERE source LIKE ? AND destination LIKE ? AND ride_date = ? AND status = 'OPEN'";
+        String sql = "SELECT * FROM rides WHERE source LIKE ? AND destination LIKE ? " +
+                "AND ride_date = ? AND status = 'OPEN' AND seats > 0";
+
         try (Connection con = DBUtil.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
 

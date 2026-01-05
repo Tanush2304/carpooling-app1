@@ -58,11 +58,14 @@ public class DriverDashboardController {
     @FXML
     private TableView<Request> requestsTable;
     @FXML
-    private TableColumn<Request, Integer> colReqById, colReqRideId;
+    private TableColumn<Request, Integer> colReqById, colReqRideId, colReqSeats;
     @FXML
     private TableColumn<Request, String> colReqStatus, colReqCustomerName;
     @FXML
     private TableColumn<Request, Button> colReqActions;
+
+    @FXML
+    private TableColumn<Request, String> colReqPaymentStatus;
 
     @FXML
     private TableColumn<Ride, Button> colRideAction; // New column for Complete button
@@ -132,7 +135,7 @@ public class DriverDashboardController {
 
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null || newValue.length() < 3) {
-                // Keep default suggestions if empty
+
                 if (newValue == null || newValue.isEmpty())
                     return;
                 suggestions.hide();
@@ -206,6 +209,17 @@ public class DriverDashboardController {
         colTime.setCellValueFactory(new PropertyValueFactory<>("rideTime"));
         colSeats.setCellValueFactory(new PropertyValueFactory<>("seats"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
+        colPrice.setCellFactory(tc -> new TableCell<Ride, Double>() {
+            @Override
+            protected void updateItem(Double price, boolean empty) {
+                super.updateItem(price, empty);
+                if (empty || price == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("₹%.2f / seat", price));
+                }
+            }
+        });
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         colRideAction.setCellValueFactory(cellData -> {
@@ -226,9 +240,11 @@ public class DriverDashboardController {
             return;
         colReqById.setCellValueFactory(new PropertyValueFactory<>("id"));
         colReqRideId.setCellValueFactory(new PropertyValueFactory<>("rideId"));
-        // Display Customer Name instead of User ID
+
         colReqCustomerName.setCellValueFactory(new PropertyValueFactory<>("customerName"));
+        colReqSeats.setCellValueFactory(new PropertyValueFactory<>("seatsRequested"));
         colReqStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        colReqPaymentStatus.setCellValueFactory(new PropertyValueFactory<>("paymentStatus"));
 
         colReqActions.setCellFactory(param -> new TableCell<>() {
             private final Button acceptBtn = new Button("Accept");
@@ -328,7 +344,6 @@ public class DriverDashboardController {
         if (RequestDAO.updateRequestStatus(request.getId(), "REJECTED")) {
             showAlert("Success", "Request rejected.");
 
-            // Send Rejection Email
             String customerEmail = UserDAO.getEmailById(request.getUserId());
             if (customerEmail != null) {
 
@@ -342,19 +357,44 @@ public class DriverDashboardController {
     }
 
     private void acceptRequest(Request request) {
+
+        Ride ride = RideDAO.getRideById(request.getRideId());
+        if (ride == null) {
+            showAlert("Error", "Ride not found.");
+            return;
+        }
+
+        int availableSeats = ride.getSeats();
+        int requestedSeats = request.getSeatsRequested();
+
+        if (requestedSeats > availableSeats) {
+            showAlert("Error", "Not enough seats available.");
+            return;
+        }
+
         if (RequestDAO.updateRequestStatus(request.getId(), "ACCEPTED")) {
-            showAlert("Success", "Request accepted!");
 
-            String customerEmail = UserDAO.getEmailById(request.getUserId());
+            int updatedSeats = availableSeats - requestedSeats;
+            RideDAO.updateSeats(ride.getId(), updatedSeats);
 
-            if (customerEmail != null) {
-                EmailService.sendBookingConfirmation("tanush.nis21b@gmail.com", UserSession.getUserName(),
-                        UserSession.getUserEmail());
-            } else {
-                System.out.println("Could not find email for user ID: " + request.getUserId());
+            if (updatedSeats == 0) {
+                RideDAO.updateRideStatus(ride.getId(), "FULL");
             }
 
+            showAlert("Success", "Request accepted and seats updated!");
+
+            String customerEmail = UserDAO.getEmailById(request.getUserId());
+            if (customerEmail != null) {
+                EmailService.sendBookingConfirmation(
+                        customerEmail,
+                        UserSession.getUserName(),
+                        UserSession.getUserEmail()
+                );
+            }
+
+            refreshRides();
             refreshRequests();
+
         } else {
             showAlert("Error", "Could not accept request.");
         }

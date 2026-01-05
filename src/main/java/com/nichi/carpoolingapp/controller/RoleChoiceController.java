@@ -18,7 +18,6 @@ public class RoleChoiceController {
         String name = UserSession.getUserName();
         userNameLabel.setText(name != null ? name : "User");
 
-        // Admin Visibility Check
         String email = UserDAO.getEmailById(UserSession.getUserId());
         if ("tanush.nis21b@gmail.com".equals(email)) {
             if (adminDashboardBtn != null)
@@ -43,8 +42,12 @@ public class RoleChoiceController {
                         "Your documents are under review by the Admin. Please wait for approval.");
                 break;
             case "NONE":
-            case "REJECTED":
                 SceneUtil.load("driver-verification.fxml");
+                break;
+            case "REJECTED":
+                showAlert("Verification Rejected",
+                        "Your driver verification request was rejected by the Admin. Please contact support or re-upload valid documents.");
+                SceneUtil.load("driver-verification.fxml"); // Let them re-upload
                 break;
             default:
                 SceneUtil.load("driver-verification.fxml");

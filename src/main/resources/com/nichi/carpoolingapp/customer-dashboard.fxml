@@ -47,7 +47,7 @@
                                          <TableColumn fx:id="colDest" text="Destination" prefWidth="150"/>
                                          <TableColumn fx:id="colDate" text="Date" prefWidth="100"/>
                                          <TableColumn fx:id="colTime" text="Time" prefWidth="100"/>
-                                         <TableColumn fx:id="colPrice" text="Price" prefWidth="80"/>
+                                         <TableColumn fx:id="colPrice" text="Price / Seat" prefWidth="100"/>
                                          <TableColumn fx:id="colAction" text="Action" prefWidth="120"/>
                                      </columns>
                                 </TableView>
@@ -67,6 +67,8 @@
                                     <TableColumn fx:id="colBookDate" text="Date" prefWidth="100"/>
                                     <TableColumn fx:id="colBookDriver" text="Driver" prefWidth="120"/>
                                     <TableColumn fx:id="colBookStatus" text="Status" prefWidth="100"/>
+                                    <TableColumn fx:id="colBookCancel" text="Cancel" prefWidth="100"/>
+                                    <TableColumn fx:id="colBookPayment" text="Payment" prefWidth="120"/>
                                 </columns>
                             </TableView>
                         </VBox>

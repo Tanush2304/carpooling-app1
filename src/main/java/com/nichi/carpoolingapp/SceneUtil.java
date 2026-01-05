@@ -25,7 +25,6 @@ public class SceneUtil {
                     stage.getWidth(),
                     stage.getHeight());
 
-            // Apply global CSS
             scene.getStylesheets().add(
                     SceneUtil.class.getResource("app.css").toExternalForm());
 

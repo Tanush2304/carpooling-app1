@@ -6,13 +6,21 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class MainApp extends Application {
+    private static MainApp instance;
+
+    public MainApp() {
+        instance = this;
+    }
+
+    public static MainApp getInstance() {
+        return instance;
+    }
 
     @Override
 
     public void start(Stage stage) throws Exception {
 
-        FXMLLoader fxmlLoader =
-                new FXMLLoader(MainApp.class.getResource("login.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(MainApp.class.getResource("login.fxml"));
 
         Scene scene = new Scene(fxmlLoader.load());
 
@@ -21,14 +29,12 @@ public class MainApp extends Application {
         stage.setMinHeight(700);
 
         scene.getStylesheets().add(
-                MainApp.class.getResource("app.css").toExternalForm()
-        );
+                MainApp.class.getResource("app.css").toExternalForm());
 
         stage.setTitle("Carpooling App");
         stage.setScene(scene);
         stage.show();
     }
-
 
     public static void main(String[] args) {
         launch();

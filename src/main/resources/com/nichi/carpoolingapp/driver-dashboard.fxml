@@ -75,7 +75,7 @@
                                     <TableColumn fx:id="colDate" text="Date" prefWidth="100"/>
                                     <TableColumn fx:id="colTime" text="Time" prefWidth="100"/>
                                     <TableColumn fx:id="colSeats" text="Seats" prefWidth="50"/>
-                                    <TableColumn fx:id="colPrice" text="Price" prefWidth="80"/>
+                                    <TableColumn fx:id="colPrice" text="Price / Seat" prefWidth="100"/>
                                     <TableColumn fx:id="colStatus" text="Status" prefWidth="80"/>
                                     <TableColumn fx:id="colRideAction" text="Action" prefWidth="120"/>
                                 </columns>
@@ -94,7 +94,9 @@
                                        <TableColumn fx:id="colReqById" text="Request ID" prefWidth="80"/>
                                        <TableColumn fx:id="colReqRideId" text="Ride ID" prefWidth="80"/>
                                        <TableColumn fx:id="colReqCustomerName" text="Customer Name" prefWidth="120"/>
+                                       <TableColumn fx:id="colReqSeats" text="Seats" prefWidth="60"/>
                                        <TableColumn fx:id="colReqStatus" text="Status" prefWidth="120"/>
+                                       <TableColumn fx:id="colReqPaymentStatus" text="Payment Status" prefWidth="120"/>
                                        <TableColumn fx:id="colReqActions" text="Action" prefWidth="150"/> 
                                    </columns>
                               </TableView>

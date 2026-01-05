@@ -5,10 +5,9 @@ import java.sql.DriverManager;
 
 public class DBUtil {
 
-    private static final String URL =
-            "jdbc:mysql://192.168.1.92:3306/poolcar";
-    private static final String USER = "tanushkn";
-    private static final String PASS = "Tanush@2304";
+    private static final String URL = ConfigManager.get("db.url");
+    private static final String USER = ConfigManager.get("db.user");
+    private static final String PASS = ConfigManager.get("db.password");
 
     public static Connection getConnection() throws Exception {
 

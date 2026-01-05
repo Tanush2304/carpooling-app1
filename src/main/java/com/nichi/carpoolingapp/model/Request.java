@@ -11,6 +11,9 @@ public class Request {
     private Timestamp requestedAt;
 
     private String customerName;
+    private double ridePrice;
+    private String paymentStatus;
+    private int seatsRequested;
 
     public Request() {
     }
@@ -105,5 +108,29 @@ public class Request {
 
     public void setDriverName(String driverName) {
         this.driverName = driverName;
+    }
+
+    public double getRidePrice() {
+        return ridePrice;
+    }
+
+    public void setRidePrice(double ridePrice) {
+        this.ridePrice = ridePrice;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public int getSeatsRequested() {
+        return seatsRequested;
+    }
+
+    public void setSeatsRequested(int seatsRequested) {
+        this.seatsRequested = seatsRequested;
     }
 }

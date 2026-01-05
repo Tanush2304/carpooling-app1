@@ -5,6 +5,9 @@ module com.nichi.carpoolingapp {
     requires jdk.jsobject;
     requires java.sql;
     requires java.mail;
+    requires io.github.cdimascio.dotenv.java;
+    requires java.desktop;
+    requires stripe.java;
 
     opens com.nichi.carpoolingapp to javafx.fxml;
 

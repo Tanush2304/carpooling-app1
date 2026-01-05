@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+
+<VBox spacing="15" style="-fx-padding: 30; -fx-background-color: white;" alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nichi.carpoolingapp.controller.PaymentController" stylesheets="@style.css">
+    
+    <Label text="Complete Your Payment" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    
+    <VBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Amount to Pay:"/>
+        <Label fx:id="amountLabel" text="₹ 0.00" style="-fx-font-size: 18px; -fx-text-fill: #27ae60; -fx-font-weight: bold;"/>
+    </VBox>
+    
+    <VBox spacing="5" alignment="CENTER_LEFT">
+        <Label text="Select Payment Method:"/>
+        <ComboBox fx:id="methodCombo" promptText="Select Method" prefWidth="250">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="UPI"/>
+                    <String fx:value="Credit/Debit Card"/>
+                    <String fx:value="Net Banking"/>
+                    <String fx:value="Stripe"/>
+                    <String fx:value="Cash (Pay to Driver)"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
+    </VBox>
+    
+    <VBox fx:id="detailsBox" spacing="10" visible="false">
+        <Label text="Enter Payment Details:"/>
+        <TextField fx:id="detailsField" promptText="UPI ID / Card Number"/>
+    </VBox>
+
+    <VBox fx:id="stripeBox" spacing="10" visible="false" alignment="CENTER">
+        <Label text="Payment Link Category Generated!" style="-fx-text-fill: #3498db; -fx-font-weight: bold;"/>
+        <Hyperlink fx:id="stripeLink" text="Click here to pay with Stripe" onAction="#openStripeLink"/>
+    </VBox>
+    
+    <HBox spacing="15" alignment="CENTER">
+        <Button text="Cancel" onAction="#cancel" styleClass="button-secondary"/>
+        <Button text="Proceed to Pay" onAction="#processPayment" styleClass="button-action"/>
+    </HBox>
+
+</VBox>

@@ -34,6 +34,15 @@ public class LoginController {
     private PasswordField regPassword;
     @FXML
     private TextField regPasswordVisible;
+    @FXML
+    private TextField regOTP;
+    @FXML
+    private Button sendOTPButton;
+    @FXML
+    private Button verifyOTPButton;
+
+    private String generatedOTP;
+    private boolean isOTPSent = false;
 
     @FXML
     private void showLogin() {
@@ -101,8 +110,7 @@ public class LoginController {
     }
 
     @FXML
-    private void handleRegister() {
-
+    private void handleSendOTP() {
         String name = regName.getText();
         String email = regEmail.getText();
         String password = regPassword.isVisible()
@@ -118,6 +126,44 @@ public class LoginController {
             showLogin();
             return;
         }
+
+        // Generate 6-digit OTP
+        generatedOTP = String.format("%06d", new java.util.Random().nextInt(1000000));
+
+        // In a real app, you'd send this via EmailService
+        System.out.println("DEBUG: Generated OTP for " + email + " is: " + generatedOTP);
+
+        com.nichi.carpoolingapp.service.EmailService.sendOTPEmail(email, generatedOTP);
+
+        isOTPSent = true;
+        regOTP.setVisible(true);
+        regOTP.setManaged(true);
+        verifyOTPButton.setVisible(true);
+        verifyOTPButton.setManaged(true);
+        sendOTPButton.setVisible(false);
+        sendOTPButton.setManaged(false);
+
+        alert("OTP sent to your email. Please verify.");
+    }
+
+    @FXML
+    private void handleRegister() {
+        if (!isOTPSent) {
+            handleSendOTP();
+            return;
+        }
+
+        String otpEntered = regOTP.getText();
+        if (otpEntered == null || !otpEntered.equals(generatedOTP)) {
+            alert("Invalid OTP. Please try again.");
+            return;
+        }
+
+        String name = regName.getText();
+        String email = regEmail.getText();
+        String password = regPassword.isVisible()
+                ? regPassword.getText()
+                : regPasswordVisible.getText();
 
         boolean success = UserDAO.registerUser(name, email, password);
 
@@ -226,5 +272,14 @@ public class LoginController {
         regEmail.clear();
         regPassword.clear();
         regPasswordVisible.clear();
+        regOTP.clear();
+        regOTP.setVisible(false);
+        regOTP.setManaged(false);
+        sendOTPButton.setVisible(true);
+        sendOTPButton.setManaged(true);
+        verifyOTPButton.setVisible(false);
+        verifyOTPButton.setManaged(false);
+        isOTPSent = false;
+        generatedOTP = null;
     }
 }

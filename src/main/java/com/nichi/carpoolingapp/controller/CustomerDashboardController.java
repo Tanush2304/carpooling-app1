@@ -6,6 +6,7 @@ import com.nichi.carpoolingapp.dao.RequestDAO;
 import com.nichi.carpoolingapp.dao.RideDAO;
 import com.nichi.carpoolingapp.model.Request;
 import com.nichi.carpoolingapp.model.Ride;
+import com.nichi.carpoolingapp.service.EmailService;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -50,6 +51,12 @@ public class CustomerDashboardController {
     private TableColumn<Request, Date> colBookDate;
 
     @FXML
+    private TableColumn<Request, Button> colBookPayment;
+
+    @FXML
+    private TableColumn<Request, Button> colBookCancel;
+
+    @FXML
     private javafx.scene.web.WebView mapWebView;
 
     @FXML
@@ -74,9 +81,9 @@ public class CustomerDashboardController {
     private void setupAutocomplete(TextField textField) {
         ContextMenu suggestions = new ContextMenu();
 
-
-        String[] defaultCities = { "Bangalore", "Davangere", "Delhi", "Hyderabad", "Chennai", "Pune", "Kolkata",
-                "Ahmedabad" };
+        String[] default_cities_raw = com.nichi.carpoolingapp.util.ConfigManager
+                .get("ui.default_cities", "Bangalore,Delhi,Mumbai").split(",");
+        String[] defaultCities = java.util.Arrays.stream(default_cities_raw).map(String::trim).toArray(String[]::new);
 
         textField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal && textField.getText().isEmpty()) {
@@ -127,8 +134,8 @@ public class CustomerDashboardController {
     private List<String> fetchSuggestions(String query) {
         List<String> list = new java.util.ArrayList<>();
         try {
-            String urlStr = "https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&q="
-                    + java.net.URLEncoder.encode(query, "UTF-8");
+            String baseUrl = com.nichi.carpoolingapp.util.ConfigManager.get("api.nominatim.url");
+            String urlStr = baseUrl + java.net.URLEncoder.encode(query, "UTF-8");
             java.net.URL url = new java.net.URL(urlStr);
             java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -175,6 +182,17 @@ public class CustomerDashboardController {
         colDate.setCellValueFactory(new PropertyValueFactory<>("rideDate"));
         colTime.setCellValueFactory(new PropertyValueFactory<>("rideTime"));
         colPrice.setCellValueFactory(new PropertyValueFactory<>("price"));
+        colPrice.setCellFactory(tc -> new TableCell<Ride, Double>() {
+            @Override
+            protected void updateItem(Double price, boolean empty) {
+                super.updateItem(price, empty);
+                if (empty || price == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("₹%.2f / seat", price));
+                }
+            }
+        });
 
         colAction.setCellValueFactory(cellData -> {
             Button btn = new Button("Request");
@@ -192,6 +210,84 @@ public class CustomerDashboardController {
         colBookDate.setCellValueFactory(new PropertyValueFactory<>("rideDate"));
         colBookDriver.setCellValueFactory(new PropertyValueFactory<>("driverName"));
         colBookStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+        colBookPayment.setCellValueFactory(cellData -> {
+            Request req = cellData.getValue();
+            if ("ACCEPTED".equals(req.getStatus()) && "UNPAID".equals(req.getPaymentStatus())) {
+                Button payBtn = new Button("Pay ₹" + (req.getRidePrice() * req.getSeatsRequested()));
+                payBtn.getStyleClass().add("button-action");
+                payBtn.setOnAction(e -> handlePayment(req));
+                return new SimpleObjectProperty<>(payBtn);
+            } else if ("PAID".equals(req.getPaymentStatus())) {
+                return new SimpleObjectProperty<>(new Button("PAID"));
+            } else {
+                return new SimpleObjectProperty<>(null);
+            }
+        });
+
+        colBookCancel.setCellValueFactory(cellData -> {
+            Request req = cellData.getValue();
+            if ("PENDING".equals(req.getStatus()) || "ACCEPTED".equals(req.getStatus())) {
+                Button cancelBtn = new Button("Cancel");
+                cancelBtn.getStyleClass().add("button-danger"); // Assuming a danger style exists or just plain button
+                cancelBtn.setStyle("-fx-background-color: #ff4d4d; -fx-text-fill: white;"); // Red style
+                cancelBtn.setOnAction(e -> handleCancel(req));
+                return new SimpleObjectProperty<>(cancelBtn);
+            }
+            return new SimpleObjectProperty<>(null);
+        });
+    }
+
+    private void handleCancel(Request req) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Cancel Ride");
+        alert.setHeaderText("Are you sure you want to cancel this ride request?");
+        alert.setContentText("This action cannot be undone.");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                if (RequestDAO.updateRequestStatus(req.getId(), "CANCELLED")) {
+
+                    if ("PAID".equals(req.getPaymentStatus())) {
+                        double amount = req.getRidePrice() * req.getSeatsRequested();
+
+                        EmailService.sendRefundInitiatedEmail(
+                                UserSession.getUserEmail(),
+                                UserSession.getUserName(),
+                                req.getId(),
+                                amount);
+                    }
+
+                    showAlert("Success", "Ride request cancelled.");
+                    refreshBookings();
+                } else {
+                    showAlert("Error", "Failed to cancel ride request.");
+                }
+            }
+        });
+    }
+
+    private void handlePayment(Request req) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/com/nichi/carpoolingapp/payment-dialog.fxml"));
+            javafx.scene.Parent root = loader.load();
+            PaymentController controller = loader.getController();
+            controller.setRequest(req);
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.setTitle("Payment - Request ID: " + req.getId());
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            if (controller.isPaymentSuccessful()) {
+                refreshBookings();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Error", "Could not open payment dialog.");
+        }
     }
 
     @FXML
@@ -221,12 +317,38 @@ public class CustomerDashboardController {
     }
 
     private void requestRide(Ride ride) {
-        Request req = new Request(ride.getId(), UserSession.getUserId(), "PENDING");
-        if (RequestDAO.createRequest(req)) {
-            showAlert("Success", "Ride requested successfully!");
-        } else {
-            showAlert("Error", "Failed to request ride.");
-        }
+        TextInputDialog dialog = new TextInputDialog("1");
+        dialog.setTitle("Request Ride");
+        dialog.setHeaderText("Ride from " + ride.getSource() + " to " + ride.getDestination());
+        dialog.setContentText("Enter number of seats (Available: " + ride.getSeats() + "):");
+
+        dialog.showAndWait().ifPresent(seatsStr -> {
+            try {
+                int requestedSeats = Integer.parseInt(seatsStr);
+
+                if (requestedSeats <= 0) {
+                    showAlert("Error", "Please enter a valid number of seats.");
+                    return;
+                }
+
+                if (requestedSeats > ride.getSeats()) {
+                    showAlert("Error", "Only " + ride.getSeats() + " seats available.");
+                    return;
+                }
+
+                Request req = new Request(ride.getId(), UserSession.getUserId(), "PENDING");
+                req.setSeatsRequested(requestedSeats);
+
+                if (RequestDAO.createRequest(req)) {
+                    showAlert("Success", "Ride requested successfully for " + requestedSeats + " seats!");
+                    refreshBookings();
+                } else {
+                    showAlert("Error", "Failed to request ride.");
+                }
+            } catch (NumberFormatException e) {
+                showAlert("Error", "Invalid seat number.");
+            }
+        });
     }
 
     @FXML
